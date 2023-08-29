@@ -396,11 +396,12 @@ bool containsNumber(String str) {
 // }
 double? extractAmountFromMessage(String message) {
   final keywords = [
+    'Your new balance',
     'Total Avail.bal',
     'Avail.bal INR',
     'Avl Bal',
     'INR',
-    'Total Avail.bal INR'
+    'Total Avail.bal INR',
   ];
 
   for (var keyword in keywords) {
