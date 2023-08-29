@@ -344,13 +344,14 @@ bool containsNumber(String str) {
   }
   return hasNum;
 }
-
+// Not working
 // double? extractAmountFromMessage(String? message) {
 //   var regex = RegExp(r'(\d+\.\d{2})');
 //   var match = regex.firstMatch(message ?? '');
 //   return match != null ? double.tryParse(match.group(0) ?? '0') : null;
 // }
 
+// Not working
 // double? extractAmountFromMessage(String? message) {
 //   // var regex = RegExp(r'Avl\s*Bal\s*Rs:\s*(\d+\.\d{2})', caseSensitive: false);
 //   var regex = RegExp(r'Avail\.bal\s*INR\s*(\d+\.\d{2})', caseSensitive: false);
@@ -358,6 +359,7 @@ bool containsNumber(String str) {
 //   return match != null ? double.tryParse(match.group(1) ?? '0') : null;
 // }
 
+// Not working
 // double? extractAmountFromMessage(String message) {
 //   final keywords = ['Total Avail.bal', 'Avail.bal INR'];
 //   for (var keyword in keywords) {
@@ -375,7 +377,7 @@ bool containsNumber(String str) {
 //   }
 //   return null;
 // }
-
+// Not wokring
 // double? extractAmountFromMessage(String message) {
 //   final keywords = ['Total Avail.bal', 'Avail.bal INR','Avl Bal','INR'];
 //   for (var keyword in keywords) {
@@ -394,48 +396,98 @@ bool containsNumber(String str) {
 //   }
 //   return null;
 // }
+
+
+// For canana,union,idfc bank
+// double? extractAmountFromMessage(String message) {
+//   final keywords = [
+//     'Avl Bal is INR ',
+//     'Total Avail.bal',
+//     'Your new balance',
+//     'Avail.bal INR',
+//     'Avl Bal',
+//     'INR',
+//     'Total Avail.bal INR',
+//   ];
+
+//   for (var keyword in keywords) {
+//     final startIndex = message.indexOf(keyword);
+//     // final endIndex = message.indexOf('on 24-Jul');
+//     if (startIndex != -1) {
+//       // final remainingText = message.substring(startIndex + keyword.length);
+//       print(message);
+//       final remainingText = message.substring(startIndex + keyword.length);
+//       final cleanedText = remainingText.replaceAll(',', ''); // Remove commas
+//       final parts = cleanedText.split(RegExp(r'[^0-9]'));
+
+//       // Filter out empty parts and pick the numeric part nearest to the keyword
+//       final numericParts = parts.where((part) => part.isNotEmpty).toList();
+//       if (numericParts.isNotEmpty) {
+//         // Join numeric parts and attempt to parse the formatted amount
+//         final formattedAmount = numericParts.join('.');
+//         return double.tryParse(formattedAmount);
+//       }
+//     }
+//   }
+
+//   return null;
+// }
+
+//ICICI BANK
+// double? extractAmountFromMessage(String message) {
+//   final keyword = 'Avl Bal is INR ';
+//   final startIndex = message.indexOf(keyword);
+
+//   if (startIndex != -1) {
+//     final remainingText = message.substring(startIndex + keyword.length);
+//     final endIndex = remainingText.indexOf('.');
+
+//     if (endIndex != -1) {
+//       final balanceText = remainingText.substring(0, endIndex + 3);
+//       final cleanedText = balanceText.replaceAll(',', '');
+//       return double.tryParse(cleanedText);
+//     }
+//   }
+
+//   return null;
+// }
+// For DCB bank
+// double? extractAmountFromMessage(String message) {
+//   final keyword = 'Avail Bal is INR ';
+//   final startIndex = message.indexOf(keyword);
+
+//   if (startIndex != -1) {
+//     final remainingText = message.substring(startIndex + keyword.length);
+//     final endIndex = remainingText.indexOf(' ');
+
+//     if (endIndex != -1) {
+//       final balanceText = remainingText.substring(0, endIndex);
+//       final cleanedText = balanceText.replaceAll(',', '');
+//       return double.tryParse(cleanedText);
+//     }
+//   }
+
+//   return null;
+// }
+
+// for kotak
 double? extractAmountFromMessage(String message) {
-  final keywords = [
-    'Your new balance',
-    'Total Avail.bal',
-    'Avail.bal INR',
-    'Avl Bal',
-    'INR',
-    'Total Avail.bal INR',
-  ];
+  final keyword = 'Bal:';
+  final startIndex = message.indexOf(keyword);
 
-  for (var keyword in keywords) {
-    final startIndex = message.indexOf(keyword);
-    if (startIndex != -1) {
-      final remainingText = message.substring(startIndex + keyword.length);
-      final cleanedText = remainingText.replaceAll(',', ''); // Remove commas
-      final parts = cleanedText.split(RegExp(r'[^0-9]'));
+  if (startIndex != -1) {
+    final remainingText = message.substring(startIndex + keyword.length);
+    final endIndex = remainingText.indexOf('.');
 
-      // Filter out empty parts and pick the numeric part nearest to the keyword
-      final numericParts = parts.where((part) => part.isNotEmpty).toList();
-      if (numericParts.isNotEmpty) {
-        // Join numeric parts and attempt to parse the formatted amount
-        final formattedAmount = numericParts.join('.');
-        return double.tryParse(formattedAmount);
-      }
+    if (endIndex != -1) {
+      final balanceText = remainingText.substring(0, endIndex + 3);
+      final cleanedText = balanceText.replaceAll(',', '');
+      return double.tryParse(cleanedText);
     }
   }
 
   return null;
 }
-
-// double? extractAmountFromMessage(String message) {
-//   final startIndex = message.indexOf('Total Avail.bal');
-//   if (startIndex != -1) {
-//     final endIndex = message.indexOf('.', startIndex);
-//     if (endIndex != -1) {
-//       final balanceString = message.substring(startIndex, endIndex);
-//       final cleanedBalanceString = balanceString.replaceAll(RegExp(r'^[0-9]+$'), '');
-//       return double.tryParse(cleanedBalanceString);
-//     }
-//   }
-//   return null;
-// }
 
 class _MessagesListView extends StatelessWidget {
   const _MessagesListView({
@@ -450,7 +502,7 @@ class _MessagesListView extends StatelessWidget {
     double? recentAmount;
 
     for (var message in messages) {
-      if (message.body!.toLowerCase().contains('union')) {
+      if (message.body!.toLowerCase().contains('kotak bank')) {
         recentAmount = extractAmountFromMessage(message.body.toString());
         break; // Stop iterating once the first "union" message is found
       }
@@ -477,7 +529,8 @@ class _MessagesListView extends StatelessWidget {
             var message = messages[i];
             // if (message.body!.toLowerCase().contains('debit') ||
             //     message.body!.toLowerCase().contains('credit'))
-            if (message.body!.toLowerCase().contains('union') && !shouldStop)
+            if (message.body!.toLowerCase().contains('kotak bank') &&
+                !shouldStop)
             // if (message.body!.toLowerCase().contains('your salary has been'))
 
             {
