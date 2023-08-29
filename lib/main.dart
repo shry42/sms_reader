@@ -376,7 +376,6 @@ bool containsNumber(String str) {
 //   return null;
 // }
 
-
 // double? extractAmountFromMessage(String message) {
 //   final keywords = ['Total Avail.bal', 'Avail.bal INR','Avl Bal','INR'];
 //   for (var keyword in keywords) {
@@ -409,7 +408,7 @@ double? extractAmountFromMessage(String message) {
     if (startIndex != -1) {
       final remainingText = message.substring(startIndex + keyword.length);
       final cleanedText = remainingText.replaceAll(',', ''); // Remove commas
-      final parts = cleanedText.split(RegExp(r'[^0-9.]'));
+      final parts = cleanedText.split(RegExp(r'[^0-9]'));
 
       // Filter out empty parts and pick the numeric part nearest to the keyword
       final numericParts = parts.where((part) => part.isNotEmpty).toList();
@@ -424,8 +423,6 @@ double? extractAmountFromMessage(String message) {
   return null;
 }
 
-
-
 // double? extractAmountFromMessage(String message) {
 //   final startIndex = message.indexOf('Total Avail.bal');
 //   if (startIndex != -1) {
@@ -438,9 +435,6 @@ double? extractAmountFromMessage(String message) {
 //   }
 //   return null;
 // }
-
-
-
 
 class _MessagesListView extends StatelessWidget {
   const _MessagesListView({
@@ -455,7 +449,7 @@ class _MessagesListView extends StatelessWidget {
     double? recentAmount;
 
     for (var message in messages) {
-      if (message.body!.toLowerCase().contains('canara')) {
+      if (message.body!.toLowerCase().contains('union')) {
         recentAmount = extractAmountFromMessage(message.body.toString());
         break; // Stop iterating once the first "union" message is found
       }
@@ -482,7 +476,7 @@ class _MessagesListView extends StatelessWidget {
             var message = messages[i];
             // if (message.body!.toLowerCase().contains('debit') ||
             //     message.body!.toLowerCase().contains('credit'))
-            if (message.body!.toLowerCase().contains('canara') && !shouldStop)
+            if (message.body!.toLowerCase().contains('union') && !shouldStop)
             // if (message.body!.toLowerCase().contains('your salary has been'))
 
             {
