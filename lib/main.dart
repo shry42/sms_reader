@@ -397,7 +397,6 @@ bool containsNumber(String str) {
 //   return null;
 // }
 
-
 // For canana,union,idfc bank
 // double? extractAmountFromMessage(String message) {
 //   final keywords = [
@@ -471,16 +470,54 @@ bool containsNumber(String str) {
 // }
 
 // for kotak
+// double? extractAmountFromMessage(String message) {
+//   final keyword = 'Bal:';
+//   final startIndex = message.indexOf(keyword);
+
+//   if (startIndex != -1) {
+//     final remainingText = message.substring(startIndex + keyword.length);
+//     final endIndex = remainingText.indexOf('.');
+
+//     if (endIndex != -1) {
+//       final balanceText = remainingText.substring(0, endIndex + 3);
+//       final cleanedText = balanceText.replaceAll(',', '');
+//       return double.tryParse(cleanedText);
+//     }
+//   }
+
+//   return null;
+// }
+
+//for bcb bank
+// double? extractAmountFromMessage(String message) {
+//   final keyword = 'AVLBL BAL Rs.';
+//   final startIndex = message.indexOf(keyword);
+
+//   if (startIndex != -1) {
+//     final remainingText = message.substring(startIndex + keyword.length);
+//     final endIndex = remainingText.indexOf(',');
+
+//     if (endIndex != -1) {
+//       final balanceText = remainingText.substring(0, endIndex);
+//       final cleanedText = balanceText.replaceAll(',', '');
+//       return double.tryParse(cleanedText);
+//     }
+//   }
+
+//   return null;
+// }
+
+// for saraswat bank
 double? extractAmountFromMessage(String message) {
-  final keyword = 'Bal:';
+  final keyword = 'Current Bal is INR';
   final startIndex = message.indexOf(keyword);
 
   if (startIndex != -1) {
     final remainingText = message.substring(startIndex + keyword.length);
-    final endIndex = remainingText.indexOf('.');
+    final endIndex = remainingText.indexOf('CR');
 
     if (endIndex != -1) {
-      final balanceText = remainingText.substring(0, endIndex + 3);
+      final balanceText = remainingText.substring(0, endIndex);
       final cleanedText = balanceText.replaceAll(',', '');
       return double.tryParse(cleanedText);
     }
@@ -502,7 +539,7 @@ class _MessagesListView extends StatelessWidget {
     double? recentAmount;
 
     for (var message in messages) {
-      if (message.body!.toLowerCase().contains('kotak bank')) {
+      if (message.body!.toLowerCase().contains('saraswat')) {
         recentAmount = extractAmountFromMessage(message.body.toString());
         break; // Stop iterating once the first "union" message is found
       }
@@ -529,8 +566,7 @@ class _MessagesListView extends StatelessWidget {
             var message = messages[i];
             // if (message.body!.toLowerCase().contains('debit') ||
             //     message.body!.toLowerCase().contains('credit'))
-            if (message.body!.toLowerCase().contains('kotak bank') &&
-                !shouldStop)
+            if (message.body!.toLowerCase().contains('saraswat') && !shouldStop)
             // if (message.body!.toLowerCase().contains('your salary has been'))
 
             {
