@@ -200,7 +200,6 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_sms_inbox/flutter_sms_inbox.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:seel_sms_reader/main%20copy.dart';
 
 void main() {
   runApp(const MyApp());
@@ -451,7 +450,6 @@ double? extractAmountFromMessageIcici(String message) {
 
   return null;
 }
-
 // For DCB bank
 double? extractAmountFromMessageDcb(String message) {
   final keyword = 'Avail Bal is INR ';
@@ -472,24 +470,6 @@ double? extractAmountFromMessageDcb(String message) {
 }
 
 // for kotak
-// double? extractAmountFromMessageKotak(String message) {
-//   final keyword = 'Bal:';
-//   final startIndex = message.indexOf(keyword);
-
-//   if (startIndex != -1) {
-//     final remainingText = message.substring(startIndex + keyword.length);
-//     final endIndex = remainingText.indexOf('.');
-
-//     if (endIndex != -1) {
-//       final balanceText = remainingText.substring(0, endIndex + 3);
-//       final cleanedText = balanceText.replaceAll(',', '');
-//       return double.tryParse(cleanedText);
-//     }
-//   }
-
-//   return null;
-// }
-
 double? extractAmountFromMessageKotak(String message) {
   final keyword = 'Bal:';
   final startIndex = message.indexOf(keyword);
@@ -556,126 +536,11 @@ class _MessagesListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    double? recentAmountUnion;
-    double? recentAmountCanara;
-    double? recentAmountSaraswat;
-    double? recentAmountBcb;
-    double? recentAmountKotak;
-    double? recentAmountIcici;
-    double? recentAmountDcb;
-    double? recentAmountIdfc;
-
-    List<String> onlyBankMessage = [];
-// this loop will add only bank message and filter other message
-    for (var message in messages) {
-      if (message.body!.toLowerCase().contains('bank')) {
-        onlyBankMessage.add(message.body!.toLowerCase());
-        print('adding bank sms');
-      }
-    }
-// for separating bank
-    List<String> unionBankMessage = [];
-    List<String> canaraBankMessage = [];
-    for (var message in onlyBankMessage) {
-      if (message.contains('union')) {
-        unionBankMessage.add(message);
-        print('adding msg to union bank message');
-      } else if (message.contains('canara')) {
-        canaraBankMessage.add(message);
-        print('adding msg to canara bank message');
-      }
-    }
-// for separarting balance message only from message of same bank
-    List<String> unionBankBalanceMessage = [];
-    List<String> canaraBankBalanceMessage = [];
-    // for (var message in unionBankMessage) {
-    //   if (message.contains('union')) {
-    //     unionBankBalanceMessage.add(message);
-    //     recentAmountUnion = extractAmountFromMessageCanaraUnionIdfc(message);
-    //     print(recentAmountUnion);
-    //     print(message);
-    //     break;
-    //   }
-    // }
-    // for (var message in canaraBankMessage) {
-    //   if (message.contains('canara')) {
-    //     canaraBankBalanceMessage.add(message);
-    //     recentAmountCanara =
-    //         extractAmountFromMessageCanaraUnionIdfc(message.toString());
-    //     print(recentAmountCanara);
-    //     print(message);
-    //     break;
-    //   }
-    // }
-    for (var message in messages) {
-      if (message.body!.toLowerCase().contains('union')) {
-        if (message.body!.toLowerCase().contains('avl bal rs')) {
-          recentAmountUnion =
-              extractAmountFromMessageCanaraUnionIdfc(message.body.toString());
-          print(message.body.toString());
-          break; // Stop iterating once the first "union" message is found
-        }
-      }
-    }
-    for (var message in messages) {
-      if (message.body!.toLowerCase().contains('saraswat') &&
-          message.body!.toLowerCase().contains('current bal is inr')) {
-        recentAmountSaraswat =
-            extractAmountFromMessageSaraswat(message.body.toString());
-        print(message.body.toString());
-        break; // Stop iterating once the first "union" message is found
-      }
-    }
-    for (var message in messages) {
-      if (message.body!.toLowerCase().contains('canara') &&
-          message.body!.toLowerCase().contains('avail.bal inr')) {
-        recentAmountCanara =
-            extractAmountFromMessageCanaraUnionIdfc(message.body.toString());
-        print(message.body.toString());
-        break; // Stop iterating once the first "union" message is found
-      }
-    }
-    for (var message in messages) {
-      if (message.body!.toLowerCase().contains('bcb') &&
-          message.body!.toLowerCase().contains('avlbl bal rs')) {
-        recentAmountBcb = extractAmountFromMessageBcb(message.body.toString());
-        print(message.body.toString());
-        break; // Stop iterating once the first "union" message is found
-      }
-    }
-    for (var message in messages) {
-      if (message.body!.toLowerCase().contains('your kotak bank ac') &&
-          message.body!.toLowerCase().contains('bal')) {
-        recentAmountKotak =
-            extractAmountFromMessageKotak(message.body.toString());
-        print(message.body.toString());
-        break; // Stop iterating once the first "union" message is found
-      }
-    }
+    double? recentAmount;
 
     for (var message in messages) {
-      if (message.body!.toLowerCase().contains('icici') &&
-          message.body!.toLowerCase().contains('avl bal is inr')) {
-        recentAmountIcici =
-            extractAmountFromMessageIcici(message.body.toString());
-        print(message.body.toString());
-        break; // Stop iterating once the first "union" message is found
-      }
-    }
-    for (var message in messages) {
-      if (message.body!.toLowerCase().contains('dcb') &&
-          message.body!.toLowerCase().contains('avail bal is inr')) {
-        recentAmountDcb = extractAmountFromMessageDcb(message.body.toString());
-        print(message.body.toString());
-        break; // Stop iterating once the first "union" message is found
-      }
-    }
-    for (var message in messages) {
-      if (message.body!.toLowerCase().contains('idfc') &&
-          message.body!.toLowerCase().contains('your new balance is inr')) {
-        recentAmountIdfc =
-            extractAmountFromMessageCanaraUnionIdfc(message.body.toString());
-        print(message.body.toString());
+      if (message.body!.toLowerCase().contains('saraswat')) {
+        recentAmount = extractAmountFromMessageSaraswat(message.body.toString());
         break; // Stop iterating once the first "union" message is found
       }
     }
@@ -694,80 +559,33 @@ class _MessagesListView extends StatelessWidget {
     bool shouldStop = false;
     return Column(
       children: [
-        // ListView.builder(
-        //   shrinkWrap: true,
-        //   itemCount: messages.length,
-        //   itemBuilder: (BuildContext context, int i) {
-        //     var message = messages[i];
-        //     // if (message.body!.toLowerCase().contains('debit') ||
-        //     //     message.body!.toLowerCase().contains('credit'))
-        //     if (message.body!.toLowerCase().contains('saraswat') && !shouldStop)
-        //     // if (message.body!.toLowerCase().contains('your salary has been'))
+        ListView.builder(
+          shrinkWrap: true,
+          itemCount: messages.length,
+          itemBuilder: (BuildContext context, int i) {
+            var message = messages[i];
+            // if (message.body!.toLowerCase().contains('debit') ||
+            //     message.body!.toLowerCase().contains('credit'))
+            if (message.body!.toLowerCase().contains('saraswat') && !shouldStop)
+            // if (message.body!.toLowerCase().contains('your salary has been'))
 
-        //     {
-        //       shouldStop = true;
-        //       // messages.clear();
-        //       // amountRecent = extractAmountFromMessage(message.body)!;
+            {
+              shouldStop = true;
+              // messages.clear();
+              // amountRecent = extractAmountFromMessage(message.body)!;
 
-        //       return ListTile(
-        //         title: Text('${message.sender} [${message.date}]'),
-        //         subtitle: Text('${message.body}'),
-        //       );
-        //     } else {
-        //       return Container();
-        //     }
-        //   },
-        // ),
-        // Text(
-        //   'Your Updated Balance: ${recentAmountCanara ?? "N/A"} ${recentAmountUnion} ${recentAmountSaraswat}',
-        //   style: TextStyle(fontSize: 18),
-        // ),
-
-        Visibility(
-          visible: recentAmountUnion != null,
-          child: ListTile(
-            title: Text('Union Bank Balance'),
-            subtitle: Text(
-                'Amount: ₹${recentAmountUnion?.toStringAsFixed(2) ?? "N/A"}'),
-            leading: Icon(Icons.monetization_on_outlined),
-          ),
+              return ListTile(
+                title: Text('${message.sender} [${message.date}]'),
+                subtitle: Text('${message.body}'),
+              );
+            } else {
+              return Container();
+            }
+          },
         ),
-
-        ListTile(
-          title: Text('Canara Bank Balance'),
-          subtitle: Text('Amount: ₹${recentAmountCanara?.toStringAsFixed(2)}'),
-          leading: Icon(Icons.monetization_on_outlined),
-        ),
-        ListTile(
-          title: Text('Saraswat Bank Balance'),
-          subtitle:
-              Text('Amount: ₹${recentAmountSaraswat?.toStringAsFixed(2)}'),
-          leading: Icon(Icons.monetization_on_outlined),
-        ),
-        ListTile(
-          title: Text('Bharat Bank Balance'),
-          subtitle: Text('Amount: ₹${recentAmountBcb?.toStringAsFixed(2)}'),
-          leading: Icon(Icons.monetization_on_outlined),
-        ),
-        ListTile(
-          title: Text('Kotak Bank Balance'),
-          subtitle: Text('Amount: ₹${recentAmountKotak}'),
-          leading: Icon(Icons.monetization_on_outlined),
-        ),
-        ListTile(
-          title: Text('Icici Bank Balance'),
-          subtitle: Text('Amount: ₹${recentAmountIcici}'),
-          leading: Icon(Icons.monetization_on_outlined),
-        ),
-        ListTile(
-          title: Text('Dcb Bank Balance'),
-          subtitle: Text('Amount: ₹${recentAmountDcb}'),
-          leading: Icon(Icons.monetization_on_outlined),
-        ),
-        ListTile(
-          title: Text('Idfc Bank Balance'),
-          subtitle: Text('Amount: ₹${recentAmountIdfc}'),
-          leading: Icon(Icons.monetization_on_outlined),
+        Text(
+          'Your Updated Balance: ${recentAmount ?? "N/A"}',
+          style: TextStyle(fontSize: 18),
         ),
       ],
     );
