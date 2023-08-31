@@ -733,41 +733,63 @@ class _MessagesListView extends StatelessWidget {
           ),
         ),
 
-        ListTile(
-          title: Text('Canara Bank Balance'),
-          subtitle: Text('Amount: ₹${recentAmountCanara?.toStringAsFixed(2)}'),
-          leading: Icon(Icons.monetization_on_outlined),
+        Visibility(
+          visible: recentAmountCanara != null,
+          child: ListTile(
+            title: Text('Canara Bank Balance'),
+            subtitle:
+                Text('Amount: ₹${recentAmountCanara?.toStringAsFixed(2)}'),
+            leading: Icon(Icons.monetization_on_outlined),
+          ),
         ),
-        ListTile(
-          title: Text('Saraswat Bank Balance'),
-          subtitle:
-              Text('Amount: ₹${recentAmountSaraswat?.toStringAsFixed(2)}'),
-          leading: Icon(Icons.monetization_on_outlined),
+        Visibility(
+          visible: recentAmountSaraswat != null,
+          child: ListTile(
+            title: Text('Saraswat Bank Balance'),
+            subtitle:
+                Text('Amount: ₹${recentAmountSaraswat?.toStringAsFixed(2)}'),
+            leading: Icon(Icons.monetization_on_outlined),
+          ),
         ),
-        ListTile(
-          title: Text('Bharat Bank Balance'),
-          subtitle: Text('Amount: ₹${recentAmountBcb?.toStringAsFixed(2)}'),
-          leading: Icon(Icons.monetization_on_outlined),
+        Visibility(
+          visible: recentAmountBcb != null,
+          child: ListTile(
+            title: Text('Bharat Bank Balance'),
+            subtitle: Text('Amount: ₹${recentAmountBcb?.toStringAsFixed(2)}'),
+            leading: Icon(Icons.monetization_on_outlined),
+          ),
         ),
-        ListTile(
-          title: Text('Kotak Bank Balance'),
-          subtitle: Text('Amount: ₹${recentAmountKotak}'),
-          leading: Icon(Icons.monetization_on_outlined),
+        Visibility(
+          visible: recentAmountKotak != null,
+          child: ListTile(
+            title: Text('Kotak Bank Balance'),
+            subtitle: Text('Amount: ₹${recentAmountKotak}'),
+            leading: Icon(Icons.monetization_on_outlined),
+          ),
         ),
-        ListTile(
-          title: Text('Icici Bank Balance'),
-          subtitle: Text('Amount: ₹${recentAmountIcici}'),
-          leading: Icon(Icons.monetization_on_outlined),
+        Visibility(
+          visible: recentAmountIcici != null,
+          child: ListTile(
+            title: Text('Icici Bank Balance'),
+            subtitle: Text('Amount: ₹${recentAmountIcici}'),
+            leading: Icon(Icons.monetization_on_outlined),
+          ),
         ),
-        ListTile(
-          title: Text('Dcb Bank Balance'),
-          subtitle: Text('Amount: ₹${recentAmountDcb}'),
-          leading: Icon(Icons.monetization_on_outlined),
+        Visibility(
+          visible: recentAmountDcb != null,
+          child: ListTile(
+            title: Text('Dcb Bank Balance'),
+            subtitle: Text('Amount: ₹${recentAmountDcb}'),
+            leading: Icon(Icons.monetization_on_outlined),
+          ),
         ),
-        ListTile(
-          title: Text('Idfc Bank Balance'),
-          subtitle: Text('Amount: ₹${recentAmountIdfc}'),
-          leading: Icon(Icons.monetization_on_outlined),
+        Visibility(
+          visible: recentAmountIdfc != null,
+          child: ListTile(
+            title: Text('Idfc Bank Balance'),
+            subtitle: Text('Amount: ₹${recentAmountIdfc}'),
+            leading: Icon(Icons.monetization_on_outlined),
+          ),
         ),
       ],
     );
