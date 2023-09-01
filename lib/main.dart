@@ -231,7 +231,7 @@ class _MyAppState extends State<MyApp> {
       ),
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('SMS Inbox Example'),
+          title: const Text('SEEL SMS'),
         ),
         body: Container(
             padding: const EdgeInsets.all(10.0),
@@ -546,6 +546,60 @@ double? extractAmountFromMessageSaraswat(String message) {
   return null;
 }
 
+// for svc bank
+double? extractAmountFromMessageSvc(String message) {
+  final keyword = 'Clr Bal.Rs';
+  final startIndex = message.indexOf(keyword);
+
+  if (startIndex != -1) {
+    final remainingText = message.substring(startIndex + keyword.length);
+    final endIndex = remainingText.indexOf('Cr.');
+
+    if (endIndex != -1) {
+      final balanceText = remainingText.substring(0, endIndex);
+      final cleanedText = balanceText.replaceAll(',', '');
+      return double.tryParse(cleanedText);
+    }
+  }
+
+  return null;
+}
+
+// For hdfc bank
+double? extractAmountFromMessageHdfc(String message) {
+  if (message.contains('Avl bal: INR')) {
+    final keyword = 'Avl bal: INR';
+    final startIndex = message.indexOf(keyword);
+
+    if (startIndex != -1) {
+      final remainingText = message.substring(startIndex + keyword.length);
+      final endIndex = remainingText.indexOf('.');
+
+      if (endIndex != -1) {
+        final balanceText = remainingText.substring(0, endIndex);
+        final cleanedText = balanceText.replaceAll(',', '');
+        return double.tryParse(cleanedText);
+      }
+    }
+  } else if (message.contains('Avl bal:')) {
+    final keyword = 'Avl bal:';
+    final startIndex = message.indexOf(keyword);
+
+    if (startIndex != -1) {
+      final remainingText = message.substring(startIndex + keyword.length);
+      final endIndex = remainingText.indexOf('Not');
+
+      if (endIndex != -1) {
+        final balanceText = remainingText.substring(0, endIndex);
+        final cleanedText = balanceText.replaceAll(',', '');
+        return double.tryParse(cleanedText);
+      }
+    }
+  }
+
+  return null;
+}
+
 class _MessagesListView extends StatelessWidget {
   const _MessagesListView({
     Key? key,
@@ -564,6 +618,8 @@ class _MessagesListView extends StatelessWidget {
     double? recentAmountIcici;
     double? recentAmountDcb;
     double? recentAmountIdfc;
+    double? recentAmountSvc;
+    double? recentAmountHdfc;
 
     List<String> onlyBankMessage = [];
 // this loop will add only bank message and filter other message
@@ -679,6 +735,29 @@ class _MessagesListView extends StatelessWidget {
         break; // Stop iterating once the first "union" message is found
       }
     }
+    for (var message in messages) {
+      if (message.body!.toLowerCase().contains('svc') &&
+          message.body!.toLowerCase().contains('clr bal.rs')) {
+        recentAmountSvc = extractAmountFromMessageSvc(message.body.toString());
+        print(message.body.toString());
+        break; // Stop iterating once the first "union" message is found
+      }
+    }
+    for (var message in messages) {
+      if (message.body!.toLowerCase().contains('hdfc') &&
+          message.body!.toLowerCase().contains('avl bal: inr')) {
+        recentAmountHdfc =
+            extractAmountFromMessageHdfc(message.body.toString());
+        print(message.body.toString());
+        break; // Stop iterating once the first "union" message is found
+      } else if (message.body!.toLowerCase().contains('hdfc') &&
+          message.body!.toLowerCase().contains('avl bal:')) {
+        recentAmountHdfc =
+            extractAmountFromMessageHdfc(message.body.toString());
+        print(message.body.toString());
+        break;
+      }
+    }
     // return ListView.builder(
     //   shrinkWrap: true,
     //   itemCount: messages.length,
@@ -788,6 +867,22 @@ class _MessagesListView extends StatelessWidget {
           child: ListTile(
             title: Text('Idfc Bank Balance'),
             subtitle: Text('Amount: ₹${recentAmountIdfc}'),
+            leading: Icon(Icons.monetization_on_outlined),
+          ),
+        ),
+        Visibility(
+          visible: recentAmountSvc != null,
+          child: ListTile(
+            title: Text('Svc Bank Balance'),
+            subtitle: Text('Amount: ₹${recentAmountSvc}'),
+            leading: Icon(Icons.monetization_on_outlined),
+          ),
+        ),
+        Visibility(
+          visible: recentAmountHdfc != null,
+          child: ListTile(
+            title: Text('Hdfc Bank Balance'),
+            subtitle: Text('Amount: ₹${recentAmountHdfc}'),
             leading: Icon(Icons.monetization_on_outlined),
           ),
         ),
