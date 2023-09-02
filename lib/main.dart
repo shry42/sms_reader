@@ -250,35 +250,35 @@ class _MyAppState extends State<MyApp> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        ElevatedButton(
-                          onPressed: () {
-                            for (var element in _messages) {
-                              if (containsTransaction(element.body ?? '')) {
-                                log('>> ${element.body}');
-                                // log('>=> ${extractAmountFromMessage(element.body)}');
-                                List<String> splits =
-                                    (element.body ?? '').split(' ');
-                                String amount = '';
-                                int index = 0;
-                                for (int i = 0; i < splits.length; i++) {
-                                  if (splits[i].toLowerCase().contains('rs') ||
-                                      splits[i].toLowerCase().contains('rs.')) {
-                                    amount = splits[i];
-                                    index = i;
-                                    break;
-                                  }
-                                }
-                                if (containsNumber(amount) == false) {
-                                  amount = splits[index + 1];
-                                }
-                                log('>=> $amount');
-                              }
+                        // ElevatedButton(
+                        //   onPressed: () {
+                        //     for (var element in _messages) {
+                        //       if (containsTransaction(element.body ?? '')) {
+                        //         log('>> ${element.body}');
+                        //         // log('>=> ${extractAmountFromMessage(element.body)}');
+                        //         List<String> splits =
+                        //             (element.body ?? '').split(' ');
+                        //         String amount = '';
+                        //         int index = 0;
+                        //         for (int i = 0; i < splits.length; i++) {
+                        //           if (splits[i].toLowerCase().contains('rs') ||
+                        //               splits[i].toLowerCase().contains('rs.')) {
+                        //             amount = splits[i];
+                        //             index = i;
+                        //             break;
+                        //           }
+                        //         }
+                        //         if (containsNumber(amount) == false) {
+                        //           amount = splits[index + 1];
+                        //         }
+                        //         log('>=> $amount');
+                        //       }
 
-                              // log('>> ${element.body}');
-                            }
-                          },
-                          child: const Text('Here'),
-                        ),
+                        //       // log('>> ${element.body}');
+                        //     }
+                        //   },
+                        //   child: const Text('Here'),
+                        // ),
                       ],
                     ),
                   )),
@@ -491,22 +491,58 @@ double? extractAmountFromMessageDcb(String message) {
 // }
 
 double? extractAmountFromMessageKotak(String message) {
-  final keyword = 'Bal:';
-  final startIndex = message.indexOf(keyword);
+  if (message.contains('Bal:')) {
+    final keyword = 'Bal:';
+    final startIndex = message.indexOf(keyword);
 
-  if (startIndex != -1) {
-    final remainingText = message.substring(startIndex + keyword.length);
-    final endIndex = remainingText.indexOf('.');
+    if (startIndex != -1) {
+      final remainingText = message.substring(startIndex + keyword.length);
+      final endIndex = remainingText.indexOf('.');
 
-    if (endIndex != -1) {
-      final balanceText = remainingText.substring(0, endIndex + 3);
-      final cleanedText = balanceText.replaceAll(',', '');
-      return double.tryParse(cleanedText);
+      if (endIndex != -1) {
+        final balanceText = remainingText.substring(0, endIndex + 3);
+        final cleanedText = balanceText.replaceAll(',', '');
+        return double.tryParse(cleanedText);
+      }
+    }
+  } else if (message.contains('Avl Bal Rs.')) {
+    final keyword = 'Avl Bal Rs.';
+    final startIndex = message.indexOf(keyword);
+
+    if (startIndex != -1) {
+      final remainingText = message.substring(startIndex + keyword.length);
+      final endIndex = remainingText.indexOf(' ');
+
+      if (endIndex != -1) {
+        final balanceText = remainingText.substring(0, endIndex);
+        final cleanedText = balanceText.replaceAll(',', '');
+        return double.tryParse(cleanedText);
+      }
     }
   }
 
   return null;
 }
+
+// double? extractAmountFromMessageKotak(String message) {
+//   if (message.contains('Avl Bal Rs.')) {
+//     final keyword = 'Avl Bal Rs.';
+//     final startIndex = message.indexOf(keyword);
+
+//     if (startIndex != -1) {
+//       final remainingText = message.substring(startIndex + keyword.length);
+//       final endIndex = remainingText.indexOf(' ');
+
+//       if (endIndex != -1) {
+//         final balanceText = remainingText.substring(0, endIndex);
+//         final cleanedText = balanceText.replaceAll(',', '');
+//         return double.tryParse(cleanedText);
+//       }
+//     }
+//   }
+
+//   return null;
+// }
 
 //for bcb bank
 double? extractAmountFromMessageBcb(String message) {
@@ -600,6 +636,25 @@ double? extractAmountFromMessageHdfc(String message) {
   return null;
 }
 
+// Maharastra bank
+double? extractAmountFromMessageMaha(String message) {
+  final keyword = 'A/c Bal is INR ';
+  final startIndex = message.indexOf(keyword);
+
+  if (startIndex != -1) {
+    final remainingText = message.substring(startIndex + keyword.length);
+    final endIndex = remainingText.indexOf(' ');
+
+    if (endIndex != -1) {
+      final balanceText = remainingText.substring(0, endIndex);
+      final cleanedText = balanceText.replaceAll(',', '');
+      return double.tryParse(cleanedText);
+    }
+  }
+
+  return null;
+}
+
 class _MessagesListView extends StatelessWidget {
   const _MessagesListView({
     Key? key,
@@ -620,6 +675,7 @@ class _MessagesListView extends StatelessWidget {
     double? recentAmountIdfc;
     double? recentAmountSvc;
     double? recentAmountHdfc;
+    double? recentAmountMaharastra;
 
     List<String> onlyBankMessage = [];
 // this loop will add only bank message and filter other message
@@ -700,7 +756,7 @@ class _MessagesListView extends StatelessWidget {
       }
     }
     for (var message in messages) {
-      if (message.body!.toLowerCase().contains('your kotak bank ac') &&
+      if (message.body!.toLowerCase().contains('kotak bank') &&
           message.body!.toLowerCase().contains('bal')) {
         recentAmountKotak =
             extractAmountFromMessageKotak(message.body.toString());
@@ -756,6 +812,16 @@ class _MessagesListView extends StatelessWidget {
             extractAmountFromMessageHdfc(message.body.toString());
         print(message.body.toString());
         break;
+      }
+    }
+
+    for (var message in messages) {
+      if (message.body!.toLowerCase().contains('mahabank') &&
+          message.body!.toLowerCase().contains('a/c bal is ')) {
+        recentAmountMaharastra =
+            extractAmountFromMessageMaha(message.body.toString());
+        print(message.body.toString());
+        break; // Stop iterating once the first "union" message is found
       }
     }
     // return ListView.builder(
@@ -883,6 +949,14 @@ class _MessagesListView extends StatelessWidget {
           child: ListTile(
             title: Text('Hdfc Bank Balance'),
             subtitle: Text('Amount: ₹${recentAmountHdfc}'),
+            leading: Icon(Icons.monetization_on_outlined),
+          ),
+        ),
+        Visibility(
+          visible: recentAmountMaharastra != null,
+          child: ListTile(
+            title: Text('Maharastra Bank Balance'),
+            subtitle: Text('Amount: ₹${recentAmountMaharastra}'),
             leading: Icon(Icons.monetization_on_outlined),
           ),
         ),
