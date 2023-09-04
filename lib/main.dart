@@ -200,7 +200,10 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_sms_inbox/flutter_sms_inbox.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:seel_sms_reader/credit_card.dart';
+import 'package:seel_sms_reader/emi_msg.dart';
 import 'package:seel_sms_reader/main%20copy.dart';
+import 'package:get/get.dart';
 
 void main() {
   runApp(const MyApp());
@@ -224,7 +227,7 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       title: 'Flutter SMS Inbox App',
       theme: ThemeData(
         primarySwatch: Colors.teal,
@@ -232,56 +235,85 @@ class _MyAppState extends State<MyApp> {
       home: Scaffold(
         appBar: AppBar(
           title: const Text('SEEL SMS'),
+          actions: [
+            IconButton(
+                onPressed: () {
+                  // Navigator.push(context,
+                  //     MaterialPageRoute(builder: ((context) {
+                  //   return EmiMsg(messages: _messages);
+                  // })));
+                  Get.to(EmiMsg(messages: _messages));
+                },
+                icon: Icon(Icons.mobile_friendly_rounded))
+          ],
         ),
-        body: Container(
-            padding: const EdgeInsets.all(10.0),
-            child: _messages.isNotEmpty
-                ? _MessagesListView(
-                    messages: _messages,
-                  )
-                // : Center(
-                //     child: Text(
-                //       'No messages to show.\n Tap refresh button...',
-                //       style: Theme.of(context).textTheme.headlineSmall,
-                //       textAlign: TextAlign.center,
-                //     ),
-                //   ),
-                : Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        // ElevatedButton(
-                        //   onPressed: () {
-                        //     for (var element in _messages) {
-                        //       if (containsTransaction(element.body ?? '')) {
-                        //         log('>> ${element.body}');
-                        //         // log('>=> ${extractAmountFromMessage(element.body)}');
-                        //         List<String> splits =
-                        //             (element.body ?? '').split(' ');
-                        //         String amount = '';
-                        //         int index = 0;
-                        //         for (int i = 0; i < splits.length; i++) {
-                        //           if (splits[i].toLowerCase().contains('rs') ||
-                        //               splits[i].toLowerCase().contains('rs.')) {
-                        //             amount = splits[i];
-                        //             index = i;
-                        //             break;
-                        //           }
-                        //         }
-                        //         if (containsNumber(amount) == false) {
-                        //           amount = splits[index + 1];
-                        //         }
-                        //         log('>=> $amount');
-                        //       }
+        // body: Container(
+        //     padding: const EdgeInsets.all(10.0),
+        //     child: _messages.isNotEmpty
+        //         ? _MessagesListView(
+        //             messages: _messages,
+        //           )
+        //         : Center(
+        //             child: Column(
+        //               mainAxisAlignment: MainAxisAlignment.center,
+        //               children: [
+        //                 ElevatedButton(
+        //                     onPressed: () async {
+        //                       print("Requesting SMS permission...");
+        //                       var permission = await Permission.sms.request();
+        //                       print("Permission status: $permission");
 
-                        //       // log('>> ${element.body}');
-                        //     }
-                        //   },
-                        //   child: const Text('Here'),
-                        // ),
-                      ],
-                    ),
-                  )),
+        //                       // var permission = await Permission.sms.status;
+        //                       if (permission.isGranted) {
+        //                         final messages = await _query.querySms(
+        //                           kinds: [
+        //                             SmsQueryKind.inbox,
+        //                             SmsQueryKind.sent,
+        //                           ],
+        //                           // address: '+254712345789',
+        //                           // count: 10,
+        //                         );
+        //                         debugPrint(
+        //                             'sms inbox messages: ${messages.length}');
+
+        //                         setState(() => _messages = messages);
+        //                       } else {
+        //                         await Permission.sms.request();
+        //                       }
+        //                       // Navigator.push(context,
+        //                       //     MaterialPageRoute(builder: ((context) {
+        //                       //   return EmiMsg(messages: _messages);
+        //                       // })));
+        //                     },
+        //                     child: Text('Click Here To view Your EMI'))
+        //               ],
+        //             ),
+        //           )),
+        body: Column(
+          children: [
+            ElevatedButton(
+                onPressed: () {
+                  Get.to(_MessagesListView(
+                    messages: _messages,
+                  ));
+                },
+                child: Text('View Your Balance')),
+            ElevatedButton(
+                onPressed: () {
+                  Get.to(EmiMsg(
+                    messages: _messages,
+                  ));
+                },
+                child: Text('View Your Emi')),
+            ElevatedButton(
+                onPressed: () {
+                  Get.to(CreditCard(
+                    messages: _messages,
+                  ));
+                },
+                child: Text('Credit Card')),
+          ],
+        ),
         floatingActionButton: FloatingActionButton(
           onPressed: () async {
             print("Requesting SMS permission...");
@@ -655,6 +687,25 @@ double? extractAmountFromMessageMaha(String message) {
   return null;
 }
 
+//axis bank
+double? extractAmountFromMessageAxis(String message) {
+  final keyword = 'Bal INR ';
+  final startIndex = message.indexOf(keyword);
+
+  if (startIndex != -1) {
+    final remainingText = message.substring(startIndex + keyword.length);
+    final endIndex = remainingText.indexOf('SMS');
+
+    if (endIndex != -1) {
+      final balanceText = remainingText.substring(0, endIndex);
+      final cleanedText = balanceText.replaceAll(',', '');
+      return double.tryParse(cleanedText);
+    }
+  }
+
+  return null;
+}
+
 class _MessagesListView extends StatelessWidget {
   const _MessagesListView({
     Key? key,
@@ -676,6 +727,7 @@ class _MessagesListView extends StatelessWidget {
     double? recentAmountSvc;
     double? recentAmountHdfc;
     double? recentAmountMaharastra;
+    double? recentAmountAxis;
 
     List<String> onlyBankMessage = [];
 // this loop will add only bank message and filter other message
@@ -824,6 +876,15 @@ class _MessagesListView extends StatelessWidget {
         break; // Stop iterating once the first "union" message is found
       }
     }
+    for (var message in messages) {
+      if (message.body!.toLowerCase().contains('axis') &&
+          message.body!.toLowerCase().contains('bal inr ')) {
+        recentAmountAxis =
+            extractAmountFromMessageAxis(message.body.toString());
+        print(message.body.toString());
+        break; // Stop iterating once the first "union" message is found
+      }
+    }
     // return ListView.builder(
     //   shrinkWrap: true,
     //   itemCount: messages.length,
@@ -837,130 +898,146 @@ class _MessagesListView extends StatelessWidget {
     //   },
     // );
     bool shouldStop = false;
-    return Column(
-      children: [
-        // ListView.builder(
-        //   shrinkWrap: true,
-        //   itemCount: messages.length,
-        //   itemBuilder: (BuildContext context, int i) {
-        //     var message = messages[i];
-        //     // if (message.body!.toLowerCase().contains('debit') ||
-        //     //     message.body!.toLowerCase().contains('credit'))
-        //     if (message.body!.toLowerCase().contains('saraswat') && !shouldStop)
-        //     // if (message.body!.toLowerCase().contains('your salary has been'))
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Sms Balance'),
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            // ListView.builder(
+            //   shrinkWrap: true,
+            //   itemCount: messages.length,
+            //   itemBuilder: (BuildContext context, int i) {
+            //     var message = messages[i];
+            //     // if (message.body!.toLowerCase().contains('debit') ||
+            //     //     message.body!.toLowerCase().contains('credit'))
+            //     if (message.body!.toLowerCase().contains('saraswat') && !shouldStop)
+            //     // if (message.body!.toLowerCase().contains('your salary has been'))
 
-        //     {
-        //       shouldStop = true;
-        //       // messages.clear();
-        //       // amountRecent = extractAmountFromMessage(message.body)!;
+            //     {
+            //       shouldStop = true;
+            //       // messages.clear();
+            //       // amountRecent = extractAmountFromMessage(message.body)!;
 
-        //       return ListTile(
-        //         title: Text('${message.sender} [${message.date}]'),
-        //         subtitle: Text('${message.body}'),
-        //       );
-        //     } else {
-        //       return Container();
-        //     }
-        //   },
-        // ),
-        // Text(
-        //   'Your Updated Balance: ${recentAmountCanara ?? "N/A"} ${recentAmountUnion} ${recentAmountSaraswat}',
-        //   style: TextStyle(fontSize: 18),
-        // ),
+            //       return ListTile(
+            //         title: Text('${message.sender} [${message.date}]'),
+            //         subtitle: Text('${message.body}'),
+            //       );
+            //     } else {
+            //       return Container();
+            //     }
+            //   },
+            // ),
+            // Text(
+            //   'Your Updated Balance: ${recentAmountCanara ?? "N/A"} ${recentAmountUnion} ${recentAmountSaraswat}',
+            //   style: TextStyle(fontSize: 18),
+            // ),
 
-        Visibility(
-          visible: recentAmountUnion != null,
-          child: ListTile(
-            title: Text('Union Bank Balance'),
-            subtitle: Text(
-                'Amount: ₹${recentAmountUnion?.toStringAsFixed(2) ?? "N/A"}'),
-            leading: Icon(Icons.monetization_on_outlined),
-          ),
-        ),
+            Visibility(
+              visible: recentAmountUnion != null,
+              child: ListTile(
+                title: Text('Union Bank Balance'),
+                subtitle: Text(
+                    'Amount: ₹${recentAmountUnion?.toStringAsFixed(2) ?? "N/A"}'),
+                leading: Icon(Icons.monetization_on_outlined),
+              ),
+            ),
 
-        Visibility(
-          visible: recentAmountCanara != null,
-          child: ListTile(
-            title: Text('Canara Bank Balance'),
-            subtitle:
-                Text('Amount: ₹${recentAmountCanara?.toStringAsFixed(2)}'),
-            leading: Icon(Icons.monetization_on_outlined),
-          ),
+            Visibility(
+              visible: recentAmountCanara != null,
+              child: ListTile(
+                title: Text('Canara Bank Balance'),
+                subtitle:
+                    Text('Amount: ₹${recentAmountCanara?.toStringAsFixed(2)}'),
+                leading: Icon(Icons.monetization_on_outlined),
+              ),
+            ),
+            Visibility(
+              visible: recentAmountSaraswat != null,
+              child: ListTile(
+                title: Text('Saraswat Bank Balance'),
+                subtitle: Text(
+                    'Amount: ₹${recentAmountSaraswat?.toStringAsFixed(2)}'),
+                leading: Icon(Icons.monetization_on_outlined),
+              ),
+            ),
+            Visibility(
+              visible: recentAmountBcb != null,
+              child: ListTile(
+                title: Text('Bharat Bank Balance'),
+                subtitle:
+                    Text('Amount: ₹${recentAmountBcb?.toStringAsFixed(2)}'),
+                leading: Icon(Icons.monetization_on_outlined),
+              ),
+            ),
+            Visibility(
+              visible: recentAmountKotak != null,
+              child: ListTile(
+                title: Text('Kotak Bank Balance'),
+                subtitle: Text('Amount: ₹${recentAmountKotak}'),
+                leading: Icon(Icons.monetization_on_outlined),
+              ),
+            ),
+            Visibility(
+              visible: recentAmountIcici != null,
+              child: ListTile(
+                title: Text('Icici Bank Balance'),
+                subtitle: Text('Amount: ₹${recentAmountIcici}'),
+                leading: Icon(Icons.monetization_on_outlined),
+              ),
+            ),
+            Visibility(
+              visible: recentAmountDcb != null,
+              child: ListTile(
+                title: Text('Dcb Bank Balance'),
+                subtitle: Text('Amount: ₹${recentAmountDcb}'),
+                leading: Icon(Icons.monetization_on_outlined),
+              ),
+            ),
+            Visibility(
+              visible: recentAmountIdfc != null,
+              child: ListTile(
+                title: Text('Idfc Bank Balance'),
+                subtitle: Text('Amount: ₹${recentAmountIdfc}'),
+                leading: Icon(Icons.monetization_on_outlined),
+              ),
+            ),
+            Visibility(
+              visible: recentAmountSvc != null,
+              child: ListTile(
+                title: Text('Svc Bank Balance'),
+                subtitle: Text('Amount: ₹${recentAmountSvc}'),
+                leading: Icon(Icons.monetization_on_outlined),
+              ),
+            ),
+            Visibility(
+              visible: recentAmountHdfc != null,
+              child: ListTile(
+                title: Text('Hdfc Bank Balance'),
+                subtitle: Text('Amount: ₹${recentAmountHdfc}'),
+                leading: Icon(Icons.monetization_on_outlined),
+              ),
+            ),
+            Visibility(
+              visible: recentAmountMaharastra != null,
+              child: ListTile(
+                title: Text('Maharastra Bank Balance'),
+                subtitle: Text('Amount: ₹${recentAmountMaharastra}'),
+                leading: Icon(Icons.monetization_on_outlined),
+              ),
+            ),
+            Visibility(
+              visible: recentAmountAxis != null,
+              child: ListTile(
+                title: Text('Axis Bank Balance'),
+                subtitle: Text('Amount: ₹${recentAmountAxis}'),
+                leading: Icon(Icons.monetization_on_outlined),
+              ),
+            ),
+          ],
         ),
-        Visibility(
-          visible: recentAmountSaraswat != null,
-          child: ListTile(
-            title: Text('Saraswat Bank Balance'),
-            subtitle:
-                Text('Amount: ₹${recentAmountSaraswat?.toStringAsFixed(2)}'),
-            leading: Icon(Icons.monetization_on_outlined),
-          ),
-        ),
-        Visibility(
-          visible: recentAmountBcb != null,
-          child: ListTile(
-            title: Text('Bharat Bank Balance'),
-            subtitle: Text('Amount: ₹${recentAmountBcb?.toStringAsFixed(2)}'),
-            leading: Icon(Icons.monetization_on_outlined),
-          ),
-        ),
-        Visibility(
-          visible: recentAmountKotak != null,
-          child: ListTile(
-            title: Text('Kotak Bank Balance'),
-            subtitle: Text('Amount: ₹${recentAmountKotak}'),
-            leading: Icon(Icons.monetization_on_outlined),
-          ),
-        ),
-        Visibility(
-          visible: recentAmountIcici != null,
-          child: ListTile(
-            title: Text('Icici Bank Balance'),
-            subtitle: Text('Amount: ₹${recentAmountIcici}'),
-            leading: Icon(Icons.monetization_on_outlined),
-          ),
-        ),
-        Visibility(
-          visible: recentAmountDcb != null,
-          child: ListTile(
-            title: Text('Dcb Bank Balance'),
-            subtitle: Text('Amount: ₹${recentAmountDcb}'),
-            leading: Icon(Icons.monetization_on_outlined),
-          ),
-        ),
-        Visibility(
-          visible: recentAmountIdfc != null,
-          child: ListTile(
-            title: Text('Idfc Bank Balance'),
-            subtitle: Text('Amount: ₹${recentAmountIdfc}'),
-            leading: Icon(Icons.monetization_on_outlined),
-          ),
-        ),
-        Visibility(
-          visible: recentAmountSvc != null,
-          child: ListTile(
-            title: Text('Svc Bank Balance'),
-            subtitle: Text('Amount: ₹${recentAmountSvc}'),
-            leading: Icon(Icons.monetization_on_outlined),
-          ),
-        ),
-        Visibility(
-          visible: recentAmountHdfc != null,
-          child: ListTile(
-            title: Text('Hdfc Bank Balance'),
-            subtitle: Text('Amount: ₹${recentAmountHdfc}'),
-            leading: Icon(Icons.monetization_on_outlined),
-          ),
-        ),
-        Visibility(
-          visible: recentAmountMaharastra != null,
-          child: ListTile(
-            title: Text('Maharastra Bank Balance'),
-            subtitle: Text('Amount: ₹${recentAmountMaharastra}'),
-            leading: Icon(Icons.monetization_on_outlined),
-          ),
-        ),
-      ],
+      ),
     );
   }
 }
