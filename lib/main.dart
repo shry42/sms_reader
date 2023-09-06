@@ -204,6 +204,7 @@ import 'package:seel_sms_reader/credit_card.dart';
 import 'package:seel_sms_reader/emi_msg.dart';
 import 'package:seel_sms_reader/main%20copy.dart';
 import 'package:get/get.dart';
+import 'package:seel_sms_reader/salary_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -312,6 +313,13 @@ class _MyAppState extends State<MyApp> {
                   ));
                 },
                 child: Text('Credit Card')),
+            ElevatedButton(
+                onPressed: () {
+                  Get.to(SalaryScreen(
+                    messages: _messages,
+                  ));
+                },
+                child: Text('Salary Card')),
           ],
         ),
         floatingActionButton: FloatingActionButton(
@@ -551,6 +559,48 @@ double? extractAmountFromMessageKotak(String message) {
         return double.tryParse(cleanedText);
       }
     }
+  } else if (message.contains('Received')) {
+    final keyword = 'Bal.Rs.';
+    final startIndex = message.indexOf(keyword);
+
+    if (startIndex != -1) {
+      final remainingText = message.substring(startIndex + keyword.length);
+      final endIndex = remainingText.indexOf('.');
+
+      if (endIndex != -1) {
+        final balanceText = remainingText.substring(0, endIndex + 3);
+        final cleanedText = balanceText.replaceAll(',', '');
+        return double.tryParse(cleanedText);
+      }
+    }
+  } else if (message.contains('IMPS')) {
+    final keyword = 'Avl.Bal.Rs.';
+    final startIndex = message.indexOf(keyword);
+
+    if (startIndex != -1) {
+      final remainingText = message.substring(startIndex + keyword.length);
+      final endIndex = remainingText.indexOf('');
+
+      if (endIndex != -1) {
+        final balanceText = remainingText.substring(0, endIndex);
+        final cleanedText = balanceText.replaceAll(',', '');
+        return double.tryParse(cleanedText);
+      }
+    }
+  } else if (message.contains('NEFT')) {
+    final keyword = 'AVAIL. BAL.:Rs ';
+    final startIndex = message.indexOf(keyword);
+
+    if (startIndex != -1) {
+      final remainingText = message.substring(startIndex + keyword.length);
+      final endIndex = remainingText.indexOf('K');
+
+      if (endIndex != -1) {
+        final balanceText = remainingText.substring(0, endIndex);
+        final cleanedText = balanceText.replaceAll(',', '');
+        return double.tryParse(cleanedText);
+      }
+    }
   }
 
   return null;
@@ -706,6 +756,97 @@ double? extractAmountFromMessageAxis(String message) {
   return null;
 }
 
+// DNS BAnk
+double? extractAmountFromMessageDns(String message) {
+  final keyword = 'Bal is INR ';
+  final startIndex = message.indexOf(keyword);
+
+  if (startIndex != -1) {
+    final remainingText = message.substring(startIndex + keyword.length);
+    final endIndex = remainingText.indexOf(' .');
+
+    if (endIndex != -1) {
+      final balanceText = remainingText.substring(0, endIndex);
+      final cleanedText = balanceText.replaceAll(',', '');
+      return double.tryParse(cleanedText);
+    }
+  }
+
+  return null;
+}
+
+// calculating salary
+double? extractSalaryFromKotak(String message) {
+  if (message.contains('IMPS')) {
+    final keyword = 'Received Rs. ';
+    final startIndex = message.indexOf(keyword);
+
+    if (startIndex != -1) {
+      final remainingText = message.substring(startIndex + keyword.length);
+      final endIndex = remainingText.indexOf('on');
+
+      if (endIndex != -1) {
+        final balanceText = remainingText.substring(0, endIndex);
+        final cleanedText = balanceText.replaceAll(',', '');
+        return double.tryParse(cleanedText);
+      }
+    }
+  }
+  if (message.contains('NEFT')) {
+    final keyword = 'Rs ';
+    final startIndex = message.indexOf(keyword);
+
+    if (startIndex != -1) {
+      final remainingText = message.substring(startIndex + keyword.length);
+      final endIndex = remainingText.indexOf('c');
+
+      if (endIndex != -1) {
+        final balanceText = remainingText.substring(0, endIndex);
+        final cleanedText = balanceText.replaceAll(',', '');
+        return double.tryParse(cleanedText);
+      }
+    }
+  }
+
+  return null;
+}
+
+double? extractSalaryFromHdfc(String message) {
+  final keyword = 'INR ';
+  final startIndex = message.indexOf(keyword);
+
+  if (startIndex != -1) {
+    final remainingText = message.substring(startIndex + keyword.length);
+    final endIndex = remainingText.indexOf('is');
+
+    if (endIndex != -1) {
+      final balanceText = remainingText.substring(0, endIndex);
+      final cleanedText = balanceText.replaceAll(',', '');
+      return double.tryParse(cleanedText);
+    }
+  }
+
+  return null;
+}
+
+double? extractSalaryFromUnion(String message) {
+  final keyword = 'Credited for Rs:';
+  final startIndex = message.indexOf(keyword);
+
+  if (startIndex != -1) {
+    final remainingText = message.substring(startIndex + keyword.length);
+    final endIndex = remainingText.indexOf(' ');
+
+    if (endIndex != -1) {
+      final balanceText = remainingText.substring(0, endIndex);
+      final cleanedText = balanceText.replaceAll(',', '');
+      return double.tryParse(cleanedText);
+    }
+  }
+
+  return null;
+}
+
 class _MessagesListView extends StatelessWidget {
   const _MessagesListView({
     Key? key,
@@ -728,8 +869,11 @@ class _MessagesListView extends StatelessWidget {
     double? recentAmountHdfc;
     double? recentAmountMaharastra;
     double? recentAmountAxis;
+    double? recentAmountDns;
 
     List<String> onlyBankMessage = [];
+    List<dynamic> salaryAmount = [];
+
 // this loop will add only bank message and filter other message
     for (var message in messages) {
       if (message.body!.toLowerCase().contains('bank')) {
@@ -885,6 +1029,45 @@ class _MessagesListView extends StatelessWidget {
         break; // Stop iterating once the first "union" message is found
       }
     }
+    for (var message in messages) {
+      if (message.body!.toLowerCase().contains('dns') &&
+          message.body!.toLowerCase().contains('bal')) {
+        recentAmountDns = extractAmountFromMessageDns(message.body.toString());
+        print(message.body.toString());
+        break; // Stop iterating once the first "union" message is found
+      }
+    }
+
+    // To count salary
+    for (var message in messages) {
+      if (message.body!.toLowerCase().contains('salary') ||
+          message.body!.toLowerCase().contains('imps') ||
+          message.body!.toLowerCase().contains('neft')) {
+        if (message.body!.toLowerCase().contains('hdfcp')) {
+          salaryAmount.add(extractSalaryFromHdfc(message.body.toString()));
+        }
+        if (message.body!.toLowerCase().contains('kotak')) {
+          salaryAmount.add(extractSalaryFromKotak(message.body.toString()));
+          print(message.body.toString());
+        }
+        if (message.body!.toLowerCase().contains('union')) {
+          salaryAmount.add(extractSalaryFromUnion(message.body.toString()));
+          print(message.body.toString());
+        }
+      }
+    }
+    print(salaryAmount);
+    double maxSalary = 0.0;
+    for (int i = 0; i < salaryAmount.length; i++) {
+      var salary = salaryAmount[i];
+      if (salary == null) {
+        continue;
+      } else if (maxSalary < salary) {
+        maxSalary = salary;
+      }
+    }
+
+    print(maxSalary);
     // return ListView.builder(
     //   shrinkWrap: true,
     //   itemCount: messages.length,
@@ -1032,6 +1215,14 @@ class _MessagesListView extends StatelessWidget {
               child: ListTile(
                 title: Text('Axis Bank Balance'),
                 subtitle: Text('Amount: ₹${recentAmountAxis}'),
+                leading: Icon(Icons.monetization_on_outlined),
+              ),
+            ),
+            Visibility(
+              visible: recentAmountDns != null,
+              child: ListTile(
+                title: Text('Dns Bank Balance'),
+                subtitle: Text('Amount: ₹${recentAmountDns}'),
                 leading: Icon(Icons.monetization_on_outlined),
               ),
             ),

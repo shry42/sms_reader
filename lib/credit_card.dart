@@ -55,6 +55,7 @@ class CreditCard extends StatelessWidget {
         print(message.body.toString());
       }
     }
+    
     for (var message in messages) {
       if (message.body!.toLowerCase().contains('axis') &&
           message.body!.toLowerCase().contains('credit card') &&
