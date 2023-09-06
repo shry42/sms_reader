@@ -55,7 +55,7 @@ double? extractSalaryFromHdfc(String message) {
 }
 
 double? extractSalaryFromUnion(String message) {
-  final keyword = 'Credited for Rs:';
+  final keyword = 'Credited for Rs.';
   final startIndex = message.indexOf(keyword);
 
   if (startIndex != -1) {
