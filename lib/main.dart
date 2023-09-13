@@ -204,6 +204,7 @@ import 'package:seel_sms_reader/credit_card.dart';
 import 'package:seel_sms_reader/emi_msg.dart';
 import 'package:seel_sms_reader/main%20copy.dart';
 import 'package:get/get.dart';
+import 'package:seel_sms_reader/others.dart';
 import 'package:seel_sms_reader/salary_screen.dart';
 
 void main() {
@@ -320,6 +321,13 @@ class _MyAppState extends State<MyApp> {
                   ));
                 },
                 child: Text('Salary Card')),
+            ElevatedButton(
+                onPressed: () {
+                  Get.to(OtherTransactions(
+                    messages: _messages,
+                  ));
+                },
+                child: Text('Others')),
           ],
         ),
         floatingActionButton: FloatingActionButton(
