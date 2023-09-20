@@ -20,6 +20,42 @@ double? extractAmountFromSip(String message) {
   return null;
 }
 
+double? extractAmountFromEcomExpress(String message) {
+  final keyword = 'Rs.';
+  final startIndex = message.indexOf(keyword);
+
+  if (startIndex != -1) {
+    final remainingText = message.substring(startIndex + keyword.length);
+    final endIndex = remainingText.indexOf(' ');
+
+    if (endIndex != -1) {
+      final balanceText = remainingText.substring(0, endIndex);
+      final cleanedText = balanceText.replaceAll(',', '');
+      return double.tryParse(cleanedText);
+    }
+  }
+
+  return null;
+}
+
+double? extractAmountFromCanaraUpi(String message) {
+  final keyword = 'Rs.';
+  final startIndex = message.indexOf(keyword);
+
+  if (startIndex != -1) {
+    final remainingText = message.substring(startIndex + keyword.length);
+    final endIndex = remainingText.indexOf(' ');
+
+    if (endIndex != -1) {
+      final balanceText = remainingText.substring(0, endIndex);
+      final cleanedText = balanceText.replaceAll(',', '');
+      return double.tryParse(cleanedText);
+    }
+  }
+
+  return null;
+}
+
 class OtherTransactions extends StatelessWidget {
   const OtherTransactions({super.key, required this.messages});
   final List<SmsMessage> messages;
@@ -27,6 +63,9 @@ class OtherTransactions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     double? sip;
+    double? orderEcomExpress;
+    List<dynamic> upiAmount = [];
+    double? upiTransaction;
     for (var message in messages) {
       if (message.body!.toLowerCase().contains('mutual fund') &&
           message.body!.toLowerCase().contains('sip') &&
@@ -35,6 +74,43 @@ class OtherTransactions extends StatelessWidget {
         print(message.body.toString());
       }
     }
+
+    // Ecom express
+    for (var message in messages) {
+      if (message.body!.toLowerCase().contains('ecom express') &&
+          message.body!.toLowerCase().contains('order') &&
+          message.body!.toLowerCase().contains('rs')) {
+        orderEcomExpress =
+            extractAmountFromEcomExpress(message.body.toString());
+        print(message.body.toString());
+      }
+    }
+
+    // upi transactions Canara
+    final currentDate = DateTime.now();
+    final lastMonthStartDate =
+        DateTime(currentDate.year, currentDate.month - 1, 1);
+    for (var message in messages) {
+      if (message.body!.toLowerCase().contains('bank') &&
+          (message.date != null && message.date!.isAfter(lastMonthStartDate)) &&
+          message.body!.toLowerCase().contains('paid') &&
+          message.body!.toLowerCase().contains('upi')) {
+        if (message.body!.toLowerCase().contains('canara')) {
+          upiAmount.add(extractAmountFromCanaraUpi(message.body.toString()));
+          // upiTransaction = extractAmountFromCanaraUpi(message.body.toString());
+        }
+
+        print(message.body.toString());
+      }
+    }
+    for (int i = 0; i < upiAmount.length; i++) {
+      if (upiAmount[i] != null) {
+        upiTransaction = (upiTransaction != null)
+            ? upiTransaction + upiAmount[i]
+            : upiAmount[i];
+      }
+    }
+    // UPI Transactions
     return Scaffold(
       appBar: AppBar(
         title: Text('Others'),
@@ -46,6 +122,33 @@ class OtherTransactions extends StatelessWidget {
             child: ListTile(
               title: Text('SIP '),
               subtitle: Text('Amount: ₹${sip?.toStringAsFixed(2) ?? "N/A"}'),
+              leading: Icon(Icons.monetization_on_outlined),
+            ),
+          ),
+          Visibility(
+            visible: orderEcomExpress != null,
+            child: ListTile(
+              title: Text('Ecom Express'),
+              subtitle: Text(
+                  'Amount: ₹${orderEcomExpress?.toStringAsFixed(2) ?? "N/A"}'),
+              leading: Icon(Icons.monetization_on_outlined),
+            ),
+          ),
+          // Visibility(
+          //   visible: upiTransaction != null,
+          //   child: ListTile(
+          //     title: Text('Upi Transaction'),
+          //     subtitle: Text(
+          //         'Amount: ₹${upiTransaction?.toStringAsFixed(2) ?? "N/A"}'),
+          //     leading: Icon(Icons.monetization_on_outlined),
+          //   ),
+          // ),
+          Visibility(
+            visible: upiTransaction != null,
+            child: ListTile(
+              title: Text('Upi Transaction'),
+              subtitle: Text(
+                  'Amount: ₹${upiTransaction?.toStringAsFixed(2) ?? "N/A"}'),
               leading: Icon(Icons.monetization_on_outlined),
             ),
           ),
