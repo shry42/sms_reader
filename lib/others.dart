@@ -38,8 +38,28 @@ double? extractAmountFromEcomExpress(String message) {
   return null;
 }
 
+// extract ammount from canara
 double? extractAmountFromCanaraUpi(String message) {
   final keyword = 'Rs.';
+  final startIndex = message.indexOf(keyword);
+
+  if (startIndex != -1) {
+    final remainingText = message.substring(startIndex + keyword.length);
+    final endIndex = remainingText.indexOf(' ');
+
+    if (endIndex != -1) {
+      final balanceText = remainingText.substring(0, endIndex);
+      final cleanedText = balanceText.replaceAll(',', '');
+      return double.tryParse(cleanedText);
+    }
+  }
+
+  return null;
+}
+
+// extract amount from sbi
+double? extractAmountFromSbiUpi(String message) {
+  final keyword = 'debited by ';
   final startIndex = message.indexOf(keyword);
 
   if (startIndex != -1) {
@@ -97,7 +117,18 @@ class OtherTransactions extends StatelessWidget {
           message.body!.toLowerCase().contains('upi')) {
         if (message.body!.toLowerCase().contains('canara')) {
           upiAmount.add(extractAmountFromCanaraUpi(message.body.toString()));
-          // upiTransaction = extractAmountFromCanaraUpi(message.body.toString());
+        }
+
+        print(message.body.toString());
+      }
+    }
+  // extract amount from sbi
+    for (var message in messages) {
+      if ((message.date != null && message.date!.isAfter(lastMonthStartDate)) &&
+          message.body!.toLowerCase().contains('debited') &&
+          message.body!.toLowerCase().contains('upi')) {
+        if (message.body!.toLowerCase().contains('sbi')) {
+          upiAmount.add(extractAmountFromSbiUpi(message.body.toString()));
         }
 
         print(message.body.toString());
