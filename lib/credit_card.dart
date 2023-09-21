@@ -55,7 +55,7 @@ class CreditCard extends StatelessWidget {
         print(message.body.toString());
       }
     }
-    
+
     for (var message in messages) {
       if (message.body!.toLowerCase().contains('axis') &&
           message.body!.toLowerCase().contains('credit card') &&
@@ -64,6 +64,8 @@ class CreditCard extends StatelessWidget {
         print(message.body.toString());
       }
     }
+
+    double totalCreditCard = hdfcCreditCard! + axisCreditCard!;
     return Scaffold(
       appBar: AppBar(
         title: Text('Credit Card'),
@@ -85,6 +87,15 @@ class CreditCard extends StatelessWidget {
               title: Text('Axis Credit card Payment '),
               subtitle: Text(
                   'Amount: ₹${axisCreditCard?.toStringAsFixed(2) ?? "N/A"}'),
+              leading: Icon(Icons.monetization_on_outlined),
+            ),
+          ),
+          Visibility(
+            visible: totalCreditCard != null,
+            child: ListTile(
+              title: Text('total Credit card Payment '),
+              subtitle: Text(
+                  'Amount: ₹${totalCreditCard?.toStringAsFixed(2) ?? "N/A"}'),
               leading: Icon(Icons.monetization_on_outlined),
             ),
           ),

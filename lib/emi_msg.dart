@@ -102,6 +102,7 @@ class EmiMsg extends StatelessWidget {
     double? emiPiramal;
     double? emiPchfl;
     double? emiIdfc;
+    double? totalEmi;
 
     for (var message in messages) {
       if (message.body!.toLowerCase().contains('pnb') &&
@@ -144,6 +145,7 @@ class EmiMsg extends StatelessWidget {
         print(message.body.toString());
       }
     }
+    totalEmi = emiIdfc! + emiPchfl! + emiPiramal! + emiPnb! + emitataCapital!;
 
     return Scaffold(
         appBar: AppBar(
@@ -193,6 +195,15 @@ class EmiMsg extends StatelessWidget {
                 title: Text('IDFC'),
                 subtitle:
                     Text('Amount: ₹${emiIdfc?.toStringAsFixed(2) ?? "N/A"}'),
+                leading: Icon(Icons.monetization_on_outlined),
+              ),
+            ),
+            Visibility(
+              visible: emiIdfc != null,
+              child: ListTile(
+                title: Text('Total Emi to be paid'),
+                subtitle:
+                    Text('Amount: ₹${totalEmi?.toStringAsFixed(2) ?? "N/A"}'),
                 leading: Icon(Icons.monetization_on_outlined),
               ),
             ),
