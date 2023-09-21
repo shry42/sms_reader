@@ -76,6 +76,25 @@ double? extractAmountFromSbiUpi(String message) {
   return null;
 }
 
+// extract amount from maharastra
+double? extractAmountFromMahaUpi(String message) {
+  final keyword = 'debited by INR ';
+  final startIndex = message.indexOf(keyword);
+
+  if (startIndex != -1) {
+    final remainingText = message.substring(startIndex + keyword.length);
+    final endIndex = remainingText.indexOf(' ');
+
+    if (endIndex != -1) {
+      final balanceText = remainingText.substring(0, endIndex);
+      final cleanedText = balanceText.replaceAll(',', '');
+      return double.tryParse(cleanedText);
+    }
+  }
+
+  return null;
+}
+
 class OtherTransactions extends StatelessWidget {
   const OtherTransactions({super.key, required this.messages});
   final List<SmsMessage> messages;
@@ -122,7 +141,7 @@ class OtherTransactions extends StatelessWidget {
         print(message.body.toString());
       }
     }
-  // extract amount from sbi
+    // extract amount from sbi
     for (var message in messages) {
       if ((message.date != null && message.date!.isAfter(lastMonthStartDate)) &&
           message.body!.toLowerCase().contains('debited') &&
@@ -130,10 +149,14 @@ class OtherTransactions extends StatelessWidget {
         if (message.body!.toLowerCase().contains('sbi')) {
           upiAmount.add(extractAmountFromSbiUpi(message.body.toString()));
         }
+        if (message.body!.toLowerCase().contains('maha')) {
+          upiAmount.add(extractAmountFromMahaUpi(message.body.toString()));
+        }
 
         print(message.body.toString());
       }
     }
+
     for (int i = 0; i < upiAmount.length; i++) {
       if (upiAmount[i] != null) {
         upiTransaction = (upiTransaction != null)
